@@ -1,16 +1,33 @@
 # main.yml
-name: kubectl test
+name: kubernetes CI/CD
 on: push
 
 jobs:
   build:
-    name: kubectl
-    runs-on: ubuntu-latest
+    name: Hello world action
+    runs-on: ubuntu-latest    
     steps:
-    - uses: azure/k8s-set-context@v1
+    - name: checkout source code
+      uses: actions/checkout@main
+
+    - name: Build the Docker image
+      run: docker build
+
+    - name: Test image
+      run: docker run
+
+    - name: login
+      run: docker login
+
+    - name: push
+      run: docker push
+
+    - name: set KUBECONFIG
+      uses: azure/k8s-set-context@v1
       with:
         method: kubeconfig
         kubeconfig: ${{ secrets.KUBECONFIG }}
       id: setcontext
+
     - name: deploy
-      run: kubectl get service
+      run: kubectl set image deployment model-serving app=$GITHUB_REPOSITORY:$GITHUB_RUN_NUMBER
